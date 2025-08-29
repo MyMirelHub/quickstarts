@@ -33,7 +33,7 @@ jobs:
       TARGET_OS: ${{ matrix.target_os }}
       TARGET_ARCH: ${{ matrix.target_arch }}
       DOCKER_CLI_EXPERIMENTAL: enabled
-      SAMPLE_REGISTRY: ${{ vars.SAMPLE_REGISTRY }}
+      SAMPLE_REGISTRY: "mirel-test"
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -73,7 +73,7 @@ jobs:
           done
       - name: Build docker image
         env:
-          SAMPLE_REGISTRY: ghcr.io/${{ env.REPO_OWNER }}/samples
+          SAMPLE_REGISTRY: "mirel-test"
         run: | 
           SAMPLE_LIST=(tutorials/hello-kubernetes tutorials/distributed-calculator tutorials/pub-sub tutorials/bindings tutorials/observability tutorials/secretstore)
           for sample in "${SAMPLE_LIST[@]}"; do
