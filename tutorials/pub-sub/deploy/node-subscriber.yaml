@@ -17,10 +17,12 @@ spec:
         dapr.io/enabled: "true"
         dapr.io/app-id: "node-subscriber"
         dapr.io/app-port: "3000"
+        gremlin.com/service-id: "node-subscriber"
+        dapr.io/enable-app-health-check: "true"
     spec:
       containers:
       - name: node-subscriber
-        image: ghcr.io/dapr/samples/pubsub-node-subscriber:latest
+        image: node-sub3:latest
         ports:
         - containerPort: 3000
-        imagePullPolicy: Always
+        imagePullPolicy: Never

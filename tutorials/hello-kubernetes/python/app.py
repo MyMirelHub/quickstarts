@@ -21,14 +21,13 @@ dapr_url = "{}/neworder".format(dapr_http_endpoint)
 n = 0
 while True:
     n += 1
-    message = {"data": {"orderId": n}}
-
     try:
-        response = requests.post(dapr_url, json=message, timeout=5, headers = {"dapr-app-id": "nodeapp"} )
-        if not response.ok:
-            print("HTTP %d => %s" % (response.status_code,
-                                     response.content.decode("utf-8")), flush=True)
+        # Publish to pubsub instead of invoking directly
+        response = requests.post(
+            "http://localhost:3500/v1.0/publish/pubsub/orders",
+            json={"orderId": n}
+        )
+        print(f"Published {n}: {response.status_code}")
     except Exception as e:
-        print(e, flush=True)
-
+        print(f"Error: {e}")
     time.sleep(1)

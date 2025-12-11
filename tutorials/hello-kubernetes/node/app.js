@@ -26,6 +26,57 @@ const stateStoreName = process.env.STATE_STORE_NAME ?? "statestore";
 const stateUrl = `${daprHttpEndpoint}/v1.0/state/${stateStoreName}`;
 const port = process.env.APP_PORT ?? "3000";
 
+let simulateFailure = false;
+
+// Modify your existing healthz endpoint
+app.get('/healthz', (_req, res) => {
+    if (simulateFailure) {
+        // Don't respond at all to simulate timeout
+        return;
+    }
+    res.status(200).send({status: 'ok'});
+});
+
+// Modify your trigger-failure endpoint to last longer
+app.post('/trigger-failure', (_req, res) => {
+    console.log("Simulating health check failure for 30 seconds...");
+    simulateFailure = true;
+    
+    setTimeout(() => {
+        console.log("Recovering from simulated failure...");
+        simulateFailure = false;
+    }, 30000);  // 30 seconds instead of 5
+    
+    res.status(200).send({message: "Triggered"});
+});
+
+
+app.get('/dapr/subscribe', (_req, res) => {
+    res.json([
+        {
+            pubsubname: "pubsub",  // matches the component name
+            topic: "orders",
+            route: "/orders"        // where to send messages
+        },
+        {
+            pubsubname: "pubsub",
+            topic: "inventory", 
+            route: "/inventory"
+        }
+    ]);
+});
+
+// Handler endpoints for the subscriptions
+app.post('/orders', (req, res) => {
+    console.log("Received order event:", req.body);
+    res.status(200).send();
+});
+
+app.post('/inventory', (req, res) => {
+    console.log("Received inventory event:", req.body);
+    res.status(200).send();
+});
+
 app.get('/order', async (_req, res) => {
     try {
         const response = await fetch(`${stateUrl}/order`);

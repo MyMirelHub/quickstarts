@@ -20,29 +20,48 @@ app.use(bodyParser.json({ type: 'application/*+json' }));
 
 const port = 3000;
 
+
+
+let simulateFailure = false;
+
+app.get('/healthz', (_req, res) => {
+    if (simulateFailure) {
+        return;
+    }
+    res.status(200).send({status: 'ok'});
+});
+
+app.post('/trigger-failure', (_req, res) => {
+    console.log("Simulating health check failure for 30 seconds...");
+    simulateFailure = true;
+    
+    setTimeout(() => {
+        console.log("Recovering from simulated failure...");
+        simulateFailure = false;
+    }, 90000);  // 30 seconds instead of 5
+    
+    res.status(200).send({message: "Triggered"});
+});
+
+
 app.get('/dapr/subscribe', (_req, res) => {
-    res.json([
-        {
+    const topics = [];
+    for (let i = 0; i < 20; i++) {
+        topics.push({
             pubsubname: "pubsub",
-            topic: "A",
-            route: "A"
-        },
-        {
-            pubsubname: "pubsub",
-            topic: "B",
-            route: "B"
-        }
-    ]);
+            topic: `Authorization.topic${i}`,
+            route: `/handler${i}`
+        });
+    }
+    res.json(topics);
 });
 
-app.post('/A', (req, res) => {
-    console.log("A: ", req.body.data.message);
-    res.sendStatus(200);
-});
-
-app.post('/B', (req, res) => {
-    console.log("B: ", req.body.data.message);
-    res.sendStatus(200);
-});
+// Add handlers for all topics
+for (let i = 0; i < 20; i++) {
+    app.post(`/handler${i}`, (req, res) => {
+        console.log(`Handler ${i}: `, req.body.data);
+        res.json({status: "SUCCESS"});
+    });
+}
 
 app.listen(port, () => console.log(`Node App listening on port ${port}!`));

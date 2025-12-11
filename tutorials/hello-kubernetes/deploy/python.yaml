@@ -20,4 +20,5 @@ spec:
     spec:
       containers:
       - name: python
-        image: ghcr.io/dapr/samples/hello-k8s-python:latest
+        image: python-test:latest
+        imagePullPolicy: Never

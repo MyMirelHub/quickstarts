@@ -1,0 +1,33 @@
+# publisher.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: publisher
+spec:
+  template:
+    metadata:
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "publisher"
+    spec:
+      containers:
+      - name: publisher
+        image: curlimages/curl:latest
+        command: ["/bin/sh"]
+        args:
+        - -c
+        - |
+          while true; do
+            # Fire 100 messages per topic in parallel
+            for i in $(seq 0 19); do
+              for j in $(seq 1 1); do
+                curl -X POST http://localhost:3500/v1.0/publish/pubsub/Authorization.topic${i} \
+                  -H "Content-Type: application/json" \
+                  -d "{\"message\": \"test${i}-${j}\"}" &
+              done
+            done
+            # That's 2000 messages in parallel
+            wait
+            # No sleep - immediately fire the next batch
+          done
+      restartPolicy: Never

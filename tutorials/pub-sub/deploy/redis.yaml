@@ -6,16 +6,23 @@ spec:
   type: pubsub.redis
   version: v1
   metadata:
-  # These settings will work out of the box if you use `helm install
-  # bitnami/redis`.  If you have your own setup, replace
-  # `redis-master:6379` with your own Redis master address, and the
-  # Redis password with your own Secret's name. For more information,
-  # see https://docs.dapr.io/operations/components/component-secrets .
-  - name: redisHost
-    value: redis-master:6379
-  - name: redisPassword
-    secretKeyRef:
-      name: redis
-      key: redis-password
+    - name: redisHost
+      value: redis-master:6379
+    - name: redisPassword
+      secretKeyRef:
+        name: redis
+        key: redis-password
+    - name: consumerID
+      value: test-consumer
+    - name: poolSize
+      value: "30"              # Must be >= number of subscribed topics
+    - name: poolTimeout
+      value: "10s"             # Timeout for acquiring connection from pool
+    - name: readTimeout
+      value: "5s"              # Socket read timeout
+    - name: writeTimeout
+      value: "5s"              # Socket write timeout
+    - name: maxConnAge
+      value: "30m"             # Maximum connection age before recycling
 auth:
   secretStore: kubernetes
