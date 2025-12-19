@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDaprWorkflow(options =>
 {
     options.RegisterWorkflow<MonitorWorkflow>();
+    options.RegisterWorkflow<ChildWorkflow>();
     options.RegisterActivity<CheckStatus>();
 });
 var app = builder.Build();

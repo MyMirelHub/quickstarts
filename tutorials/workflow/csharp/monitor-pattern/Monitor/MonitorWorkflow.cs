@@ -13,8 +13,15 @@ internal sealed class MonitorWorkflow : Workflow<int, string>
 
         if (!status.IsReady)
         {
+            // Start a child workflow WITHOUT awaiting it
+            var childWorkflowTask = context.CallChildWorkflowAsync<string>(
+                nameof(ChildWorkflow),
+                counter);
+            
             await context.CreateTimer(TimeSpan.FromSeconds(1));
             counter++;
+            
+            // ContinueAsNew should proceed immediately without waiting for child workflow
             context.ContinueAsNew(counter);
         }
 
